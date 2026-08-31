@@ -1,0 +1,24 @@
+# Python environment
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Generated analysis outputs. Every file here is reproducible by running the
+# scripts in checks/ -- the numbers they produce are recorded in docs/FINDINGS.md.
+# Figures that back a claim in the docs live in docs/ and ARE tracked.
+checks/out/
+.aidlc-rule-details
+
+# Mermaid validator deps (see tools/README.md -- installed outside the repo)
+node_modules/
+package-lock.json
+
+# macOS
+.DS_Store
+
+
+# local scratch backups
+*.original
+*.backup
