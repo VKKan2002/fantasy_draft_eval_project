@@ -10,6 +10,7 @@ NEUTRAL = "neutral"
 
 @dataclass(frozen=True)
 class Fact:
+    """A fact in a facts packet."""
 
     id: str
     label: str
@@ -21,6 +22,7 @@ class Fact:
 
 @dataclass(frozen=True)
 class NewsItem:
+    """Attributes of a news item in a facts packet."""
 
     id: str
     text: str
@@ -29,6 +31,7 @@ class NewsItem:
 
 @dataclass(frozen=True)
 class FactsPacket:
+    """Comprehensive information about a player, including facts and news items."""
 
     player: str
     position: str
