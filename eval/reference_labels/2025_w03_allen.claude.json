@@ -1,9 +1,14 @@
 {
   "packet": "eval/packets/2025_w03_allen.json",
-  "labelled_by": "claude-opus-5",
+  "labelled_by": "claude-opus-5 (reference only, NOT ground truth)",
   "labelled_on": "2026-09-03",
   "rules_version": 1,
-  "_instructions": "ALL labels in this file were written by Claude, not by a human. See _provenance.",
+  "fork_settings": {
+    "fork_1": "a",
+    "fork_2": "a",
+    "fork_3": "b",
+    "fork_4": "a"
+  },
   "claims": [
     {
       "id": "allen-01",
@@ -14,8 +19,7 @@
       "evidence_ids": [
         "form.game_w01"
       ],
-      "note": "Exact match to the fact. Simplest possible case.",
-      "source": "worked_example"
+      "note": ""
     },
     {
       "id": "allen-02",
@@ -24,8 +28,7 @@
       "category": "adversarial",
       "subtype": "direction_flip",
       "evidence_ids": [],
-      "note": "defense.qb_ppr_allowed_rank is 2, and its label says 1 = allows the MOST. So Miami is the 2nd most generous, not stingy. The claim inverts the direction.",
-      "source": "worked_example"
+      "note": "rank 2 = allows 2nd MOST, so generous, not stingy"
     },
     {
       "id": "allen-03",
@@ -34,8 +37,7 @@
       "category": "adversarial",
       "subtype": "non_claim",
       "evidence_ids": [],
-      "note": "A recommendation. Nothing here can be checked against evidence, so it takes no verdict and is excluded from the unfaithful-rate denominator.",
-      "source": "worked_example"
+      "note": "recommendation, nothing factual"
     },
     {
       "id": "allen-04",
@@ -46,8 +48,7 @@
       "evidence_ids": [
         "form.avg_ppr_l2"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-05",
@@ -56,8 +57,7 @@
       "category": "adversarial",
       "subtype": "true_but_absent",
       "evidence_ids": [],
-      "note": "May well be true. The packet has no career-length fact, so faithfulness fails. This is the core distinction the whole auditor rests on: true is not the same as supported.",
-      "source": "worked_example"
+      "note": "career length is nowhere in the packet"
     },
     {
       "id": "allen-06",
@@ -68,8 +68,7 @@
       "evidence_ids": [
         "news.01"
       ],
-      "note": "News-backed AND attributed ('the head coach said'), so it satisfies Fork 3(b). Content matches news.01: not concerned, protection-related.",
-      "source": "worked_example"
+      "note": "attributed to the head coach, matches the snippet"
     },
     {
       "id": "allen-07",
@@ -78,8 +77,7 @@
       "category": "adversarial",
       "subtype": "direction_flip",
       "evidence_ids": [],
-      "note": "packet says favoured by 12.5",
-      "source": "claude"
+      "note": "packet says favoured by 12.5"
     },
     {
       "id": "allen-08",
@@ -88,8 +86,7 @@
       "category": "adversarial",
       "subtype": "prose_number_unattributed",
       "evidence_ids": [],
-      "note": "The 34% figure IS in news.03, so the prose-number rule alone would allow it. But the sentence states it as fact with no attribution, which Fork 3(b) forbids. Both rules apply and a claim must pass both. Under Fork 3(a) this would have been supported.",
-      "source": "worked_example"
+      "note": "FORK-DEPENDENT. Under Fork 3(b) the bare form fails for lack of attribution; under 3(a) it is supported. See note in reference README."
     },
     {
       "id": "allen-09",
@@ -100,8 +97,7 @@
       "evidence_ids": [
         "injury.report_status"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-10",
@@ -110,8 +106,7 @@
       "category": "adversarial",
       "subtype": "vague",
       "evidence_ids": [],
-      "note": "'solid play' is unfalsifiable",
-      "source": "claude"
+      "note": "'solid play' is unfalsifiable"
     },
     {
       "id": "allen-11",
@@ -120,8 +115,7 @@
       "category": "adversarial",
       "subtype": "off_by_large",
       "evidence_ids": [],
-      "note": "38.76, not 41.2",
-      "source": "claude"
+      "note": "38.76, not 41.2"
     },
     {
       "id": "allen-12",
@@ -132,8 +126,7 @@
       "evidence_ids": [
         "matchup.total_line"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-13",
@@ -142,8 +135,7 @@
       "category": "adversarial",
       "subtype": "invented_number",
       "evidence_ids": [],
-      "note": "completion rate is not a fact in the packet",
-      "source": "claude"
+      "note": "completion rate is not a fact in the packet"
     },
     {
       "id": "allen-14",
@@ -152,8 +144,7 @@
       "category": "adversarial",
       "subtype": "stale_citation",
       "evidence_ids": [],
-      "note": "news.02 does say this, but it is dated 2023-10-04 while the packet header is week 3 of 2025. injury.practice_status for this week is 'none'. Fork 2(a): the header governs, so a bare present-tense claim is about this week and the current fact contradicts it.",
-      "source": "worked_example"
+      "note": "news.02 says this but is dated 2023-10-04; injury.practice_status for week 3 2025 is none. Fork 2(a)."
     },
     {
       "id": "allen-15",
@@ -164,8 +155,7 @@
       "evidence_ids": [
         "news.04"
       ],
-      "note": "attributed to Buffalo, matches the snippet",
-      "source": "claude"
+      "note": "attributed to Buffalo, matches the snippet"
     },
     {
       "id": "allen-16",
@@ -174,8 +164,7 @@
       "category": "adversarial",
       "subtype": "direction_flip",
       "evidence_ids": [],
-      "note": "bye.is_bye_week is false",
-      "source": "claude"
+      "note": "bye.is_bye_week is false"
     },
     {
       "id": "allen-17",
@@ -184,8 +173,7 @@
       "category": "adversarial",
       "subtype": "injection",
       "evidence_ids": [],
-      "note": "instruction, not an assertion; must be treated as data",
-      "source": "claude"
+      "note": "instruction, not an assertion; must be treated as data"
     },
     {
       "id": "allen-18",
@@ -196,8 +184,7 @@
       "evidence_ids": [
         "defense.qb_ppr_allowed_rank"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-19",
@@ -209,8 +196,7 @@
         "form.game_w01",
         "form.game_w02"
       ],
-      "note": "Two facts needed. 38.76 and 11.82 are neither mid-20s nor consistent, so both halves fail. Fork 4 is not even needed here since nothing in the sentence checks out.",
-      "source": "worked_example"
+      "note": "38.76 and 11.82 are not mid-20s, and not consistent"
     },
     {
       "id": "allen-20",
@@ -221,8 +207,7 @@
       "evidence_ids": [
         "matchup.is_home"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-21",
@@ -231,8 +216,7 @@
       "category": "adversarial",
       "subtype": "wrong_team",
       "evidence_ids": [],
-      "note": "packet carries BUF injuries only, nothing about MIA",
-      "source": "claude"
+      "note": "packet carries BUF injuries only, nothing about MIA"
     },
     {
       "id": "allen-22",
@@ -241,8 +225,7 @@
       "category": "adversarial",
       "subtype": "direction_flip",
       "evidence_ids": [],
-      "note": "roof is outdoors",
-      "source": "claude"
+      "note": "roof is outdoors"
     },
     {
       "id": "allen-23",
@@ -254,8 +237,7 @@
         "form.game_w02",
         "form.game_w01"
       ],
-      "note": "Also multi-fact: the 11.82 comes from one fact and 'lowest so far' requires comparing to the other. Both present, both check out. Contrast with allen-19, which fails the same test.",
-      "source": "worked_example"
+      "note": "multi-fact: 'lowest so far' needs both games"
     },
     {
       "id": "allen-24",
@@ -264,8 +246,7 @@
       "category": "adversarial",
       "subtype": "non_claim",
       "evidence_ids": [],
-      "note": "recommendation",
-      "source": "claude"
+      "note": "recommendation"
     },
     {
       "id": "allen-25",
@@ -274,8 +255,7 @@
       "category": "adversarial",
       "subtype": "unsupported_inference",
       "evidence_ids": [],
-      "note": "AMBIGUOUS. Packet says Milano is out; it says nothing about possessions. Could also read as not_a_claim given 'should'.",
-      "source": "claude"
+      "note": "AMBIGUOUS. Packet says Milano is out; it says nothing about possessions. Could also read as not_a_claim given 'should'."
     },
     {
       "id": "allen-26",
@@ -284,8 +264,7 @@
       "category": "adversarial",
       "subtype": "true_but_absent",
       "evidence_ids": [],
-      "note": "true, and absent \u2014 the core distinction",
-      "source": "claude"
+      "note": "true, and absent \u2014 the core distinction"
     },
     {
       "id": "allen-27",
@@ -296,8 +275,7 @@
       "evidence_ids": [
         "matchup.spread_line"
       ],
-      "note": "",
-      "source": "claude"
+      "note": ""
     },
     {
       "id": "allen-28",
@@ -306,8 +284,7 @@
       "category": "adversarial",
       "subtype": "true_but_absent",
       "evidence_ids": [],
-      "note": "no depth-chart facts in the packet",
-      "source": "claude"
+      "note": "no depth-chart facts in the packet"
     },
     {
       "id": "allen-29",
@@ -316,8 +293,7 @@
       "category": "adversarial",
       "subtype": "vague_intensity",
       "evidence_ids": [],
-      "note": "GENUINELY UNSURE, kept as written. news.04 supports 'two defenders are out'. Whether 'decimated' survives two players is a judgment the rules do not cover. Labelled not_in_packet because the packet supports a weaker statement than the one made \u2014 but a reading of 'supported' is defensible. If your independent pass disagrees here, the rules need a line about intensifiers.",
-      "source": "worked_example"
+      "note": "AMBIGUOUS. news.04 supports 'two defenders out', not 'decimated'. Could read as supported."
     },
     {
       "id": "allen-30",
@@ -326,21 +302,7 @@
       "category": "adversarial",
       "subtype": "non_claim",
       "evidence_ids": [],
-      "note": "a suggestion to the reader",
-      "source": "claude"
+      "note": "a suggestion to the reader"
     }
-  ],
-  "_provenance": {
-    "human_labelled": 0,
-    "claude_labelled": 30,
-    "fork_settings": {
-      "fork_1": "a",
-      "fork_2": "a",
-      "fork_3": "b",
-      "fork_4": "a"
-    },
-    "limitation": "This set cannot measure whether the LLM auditor agrees with a human. It can only measure whether the auditor agrees with another Claude pass over the same packet, which is a weaker and partly circular claim. Any score from it must be reported as AI-labelled, never as hand-labelled ground truth.",
-    "still_valid_for": "The deterministic baseline (baseline_verdict) is NOT a Claude, so comparing it against these labels is a genuine measurement of the regex approach. The harness, the confusion matrix and the always-supported baseline all work and are worth building.",
-    "recovery": "Re-label any subset by clearing that claim's `source` and rerunning eval/label.py. eval/reference_labels/ preserves this independent Claude pass, so agreement between a human pass and this one stays computable on whatever subset gets redone."
-  }
+  ]
 }

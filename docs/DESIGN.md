@@ -238,7 +238,9 @@ example makes the fork concrete. A news snippet states a pressure rate of 34%; t
 appears nowhere in the structured facts. If the writer repeats it, is the sentence faithful?
 
 Two jobs are being conflated. "Is this sentence supported by the packet?" is a judgment call
-that needs a model — and the answer is yes, the number is right there in the evidence. "May a
+that needs a model — and the answer is yes, the number is right there in the evidence,
+*provided the sentence attributes it* ("a beat writer noted..."). Stated bare, as the tool's own
+figure, it fails a separate attribution rule; see eval/LABELLING_RULES.md fork 3. "May a
 number rest on prose?" is a policy question with a fixed answer, and it needs no model at all:
 extract the numbers from the sentence, look them up in `packet.numbers()`, drop the sentence
 if they are absent. Ten lines, perfectly reliable.
