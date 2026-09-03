@@ -291,9 +291,10 @@ checks/                  Runnable experiments and data gates
 
 mcp_server/              MCP server and a client that prints the wire traffic
 
-docs/DESIGN.md           This file
-docs/FINDINGS.md         Every measured number, with the script that produced it
-docs/step1_headroom.png  The headroom chart (tracked, because it backs a claim)
+docs/DESIGN.md              This file
+docs/FINDINGS.md            Every measured number, with the script that produced it
+docs/BACKTEST_EXPLAINED.md  How the headroom measurement works, in plain language
+docs/step1_headroom.png     The headroom chart (tracked, because it backs a claim)
 
 plan.md                  STALE — predates the current design, see Known issues
 archive/                 Four earlier project directions and why each was dropped
