@@ -233,6 +233,24 @@ field — nflverse ruling a starter out — never on an article's prose. A page 
 manipulate the model can add a misleading sentence, which is visible and fixable. It cannot
 produce a wrong lineup.
 
+**One question per checker: the auditor judges evidence, code enforces policy.** A synthetic
+example makes the fork concrete. A news snippet states a pressure rate of 34%; that figure
+appears nowhere in the structured facts. If the writer repeats it, is the sentence faithful?
+
+Two jobs are being conflated. "Is this sentence supported by the packet?" is a judgment call
+that needs a model — and the answer is yes, the number is right there in the evidence. "May a
+number rest on prose?" is a policy question with a fixed answer, and it needs no model at all:
+extract the numbers from the sentence, look them up in `packet.numbers()`, drop the sentence
+if they are absent. Ten lines, perfectly reliable.
+
+So the auditor rules SUPPORTED and a separate deterministic gate drops the sentence anyway.
+Same outcome, and the reason is recoverable. Fold the policy into the auditor's prompt instead
+and a bad score cannot tell you which of the two judgments failed, so there is nothing to tune
+against.
+
+The cost, stated plainly: SUPPORTED no longer means publishable. Shipping a sentence requires
+passing both layers, and that is a property of the pipeline rather than of any single verdict.
+
 **Nothing personal goes into a prompt.** The free tier trains on submitted content and has no
 paid tier to upgrade into, so names and email addresses never enter a prompt. The model sees
 an anonymous roster; the email is assembled in our own code.

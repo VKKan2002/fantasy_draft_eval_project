@@ -44,6 +44,15 @@ status produces no verdict. Needs a `must_mention` flag per fact and its own mod
 true` to the injury and bye facts while hand-typing packets, so retro-fitting doesn't mean
 editing every file.
 
+**Numeric-source gate (layer 2).** Enforces "a number may only rest on structured facts,
+never on prose" — see the design rule in DESIGN.md. Extract numbers from a sentence, look them
+up in `packet.numbers()`, drop the sentence if absent. No model.
+
+*Shares machinery with `baseline_verdict`:* both need the same number-extraction helper, so
+write that once when building `baseline_verdict` and let the gate reuse it. Not in the freeze,
+but the decision is already recorded, so the labelling rules can be written consistently
+with it.
+
 ## Rejected, with reason
 
 **Trade evaluation.** No ground truth, unmeasurable effect size, large build. Fails

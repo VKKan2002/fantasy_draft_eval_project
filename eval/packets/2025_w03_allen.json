@@ -1,0 +1,146 @@
+{
+  "player": "Josh Allen",
+  "position": "QB",
+  "team": "BUF",
+  "opponent": "MIA",
+  "season": 2025,
+  "week": 3,
+
+  "facts": [
+    {
+      "id": "form.game_w01",
+      "label": "PPR points scored in week 1 (higher is better)",
+      "value": 38.76,
+      "unit": "ppr_points",
+      "direction": "higher_is_better",
+      "source": "nflverse player_stats (weekly, REG)",
+      "as_of": "2025 week 1"
+    },
+    {
+      "id": "form.game_w02",
+      "label": "PPR points scored in week 2 (higher is better)",
+      "value": 11.82,
+      "unit": "ppr_points",
+      "direction": "higher_is_better",
+      "source": "nflverse player_stats (weekly, REG)",
+      "as_of": "2025 week 2"
+    },
+    {
+      "id": "form.avg_ppr_l2",
+      "label": "average PPR points over the two games played so far (higher is better)",
+      "value": 25.29,
+      "unit": "ppr_points",
+      "direction": "higher_is_better",
+      "source": "nflverse player_stats (weekly, REG)",
+      "as_of": "2025 through week 2"
+    },
+    {
+      "id": "injury.report_status",
+      "label": "official injury report status: Out, Doubtful, Questionable, or none if not listed",
+      "value": "none",
+      "unit": "text",
+      "direction": "neutral",
+      "source": "nflverse load_injuries (not listed on the week 3 report)",
+      "as_of": "2025 week 3 final report"
+    },
+    {
+      "id": "injury.practice_status",
+      "label": "practice participation this week, or none if not listed",
+      "value": "none",
+      "unit": "text",
+      "direction": "neutral",
+      "source": "nflverse load_injuries (not listed on the week 3 report)",
+      "as_of": "2025 week 3"
+    },
+    {
+      "id": "matchup.spread_line",
+      "label": "point spread from this team's perspective (higher means bigger favourite)",
+      "value": 12.5,
+      "unit": "points",
+      "direction": "higher_is_better",
+      "source": "nflverse load_schedules",
+      "as_of": "2025 week 3 kickoff"
+    },
+    {
+      "id": "matchup.total_line",
+      "label": "over/under total points for the game (higher is better for fantasy)",
+      "value": 50.5,
+      "unit": "points",
+      "direction": "higher_is_better",
+      "source": "nflverse load_schedules",
+      "as_of": "2025 week 3 kickoff"
+    },
+    {
+      "id": "matchup.is_home",
+      "label": "playing at home",
+      "value": true,
+      "unit": "yes_no",
+      "direction": "neutral",
+      "source": "nflverse load_schedules",
+      "as_of": "2025 week 3"
+    },
+    {
+      "id": "matchup.roof",
+      "label": "stadium roof: outdoors, dome, closed, or open",
+      "value": "outdoors",
+      "unit": "text",
+      "direction": "neutral",
+      "source": "nflverse load_schedules",
+      "as_of": "2025 week 3"
+    },
+    {
+      "id": "defense.qb_ppr_allowed_rank",
+      "label": "opponent rank in PPR points allowed to QBs out of 32, where 1 = allows the MOST (so a lower rank is a better matchup for our player)",
+      "value": 2,
+      "unit": "rank_of_32",
+      "direction": "lower_is_better",
+      "source": "nflverse player_stats, QB points aggregated by opponent_team",
+      "as_of": "2025 through week 2"
+    },
+    {
+      "id": "defense.qb_ppr_allowed_per_game",
+      "label": "PPR points the opponent has allowed to opposing QBs per game (higher is a better matchup for our player)",
+      "value": 27.89,
+      "unit": "ppr_points",
+      "direction": "higher_is_better",
+      "source": "nflverse player_stats, QB points aggregated by opponent_team",
+      "as_of": "2025 through week 2"
+    },
+    {
+      "id": "bye.is_bye_week",
+      "label": "on a bye this week and therefore cannot be started",
+      "value": false,
+      "unit": "yes_no",
+      "direction": "neutral",
+      "source": "nflverse load_schedules",
+      "as_of": "2025 week 3"
+    }
+  ],
+
+  "news": [
+    {
+      "id": "news.01",
+      "text": "The Bills head coach told reporters on Tuesday that he was not concerned by the quarterback's quiet outing in New York, describing the issues as protection-related rather than anything physical, and said he expects a normal week of preparation.",
+      "url": "https://example.com/synthetic/bills-coach-presser",
+      "published": "2025-09-16"
+    },
+    {
+      "id": "news.02",
+      "text": "Buffalo's quarterback has been managing a shoulder problem and was limited in practice on Wednesday, according to a team source.",
+      "url": "https://example.com/synthetic/archive-shoulder-report",
+      "published": "2023-10-04"
+    },
+    {
+      "id": "news.03",
+      "text": "A beat writer noted that Buffalo's quarterback has been pressured on 34 percent of his dropbacks through the first two weeks, the eighth-highest rate in the league.",
+      "url": "https://example.com/synthetic/pressure-rate-note",
+      "published": "2025-09-17"
+    },
+    {
+      "id": "news.04",
+      "text": "Buffalo listed linebacker Matt Milano as out for Thursday's game with a pectoral injury, and defensive tackle Ed Oliver as out with an ankle injury.",
+      "url": "https://example.com/synthetic/bills-injury-report",
+      "published": "2025-09-17"
+    }
+  ]
+}
