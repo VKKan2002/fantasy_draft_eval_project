@@ -305,9 +305,21 @@ src/ffeval/              The library
   scoring/league.py      League settings, snake draft pick order
   scoring/lineup.py      Weekly lineup building and season scoring
   models/expected.py     Draft position -> expected points, fit leave-one-season-out
+  audit/verdicts.py      The four verdicts, and which of them count as unfaithful
+  audit/packet.py        The evidence a claim may rest on; reads JSON, no network
+  audit/auditor.py       Sentence splitter + the deterministic baseline checker
+  audit/evaluate.py      Scores an auditor against the labelled claims
 
 checks/                  Runnable experiments and data gates
   out/                   Generated results — not committed, always rebuildable
+
+eval/                    The auditor's evaluation set
+  LABELLING_RULES.md     The four forks, settled, and the labelling procedure
+  packets/               Hand-built facts packets: real facts, synthetic news
+  cases/                 Labelled claims, one file per packet
+  reference_labels/      An independent Claude pass, kept for agreement checks
+  label.py               Interactive labeller — one keystroke per claim
+  out/                   Results — not committed
 
 mcp_server/              MCP server and a client that prints the wire traffic
 
@@ -317,6 +329,7 @@ docs/BACKTEST_EXPLAINED.md  How the headroom measurement works, in plain languag
 docs/step1_headroom.png     The headroom chart (tracked, because it backs a claim)
 
 plan.md                  STALE — predates the current design, see Known issues
+later.md                 Parked ideas and docs owed, with the reason each is parked
 archive/                 Four earlier project directions and why each was dropped
 tools/                   Mermaid diagram validator
 ```
@@ -373,6 +386,22 @@ uv run python checks/g2_verify_aliases.py
 
 The first reports two separate numbers, because only one of them is a bug.
 
+### The claim auditor
+
+```bash
+# Score the deterministic checker against the labelled claims.
+# No model, no API key, no network.
+uv run python -m ffeval.audit.evaluate --baseline
+
+# Label claims interactively: one keystroke per claim, saves after each.
+uv run python eval/label.py
+uv run python eval/label.py --list     # progress only, changes nothing
+```
+
+The first prints a confusion matrix, the always-supported floor beside every score, and a list
+of every bad claim it missed. It exits non-zero if it fails to beat the floor, so it works in
+CI. Numbers and interpretation are in [FINDINGS.md](FINDINGS.md) section 8.
+
 ### The MCP server
 
 ```bash
@@ -425,22 +454,53 @@ Actions secrets, never in the repo.
 | Data pipeline, ID resolution, gates | done |
 | Projection rule, lineup builder | done |
 | MCP server (side door) | done, minimal |
+| Facts packet ([packet.py](../src/ffeval/audit/packet.py)) | **done** |
+| Verdict types ([verdicts.py](../src/ffeval/audit/verdicts.py)) | **done** |
+| Claim splitter + deterministic baseline checker ([auditor.py](../src/ffeval/audit/auditor.py)) | **done** |
+| Evaluation harness ([evaluate.py](../src/ffeval/audit/evaluate.py)) | **done — 33% recall measured** |
+| Labelled eval set (1 packet, 30 claims) | done — labels are AI-written, see below |
+| LLM auditor (prompt, model call, parsing) | not started — **next** |
 | Test suite | **none** — `pytest` declared, no tests written |
-| Facts packet | not started |
-| Claim auditor + its evaluation | not started — **next** |
+| Numeric-source gate (layer 2) | not started, decided |
+| Templated numeric prose | not started |
 | News search and the digging loop | not started |
 | ESPN roster fetch | not started |
 | Email, change-gating, cron | not started |
 
-**The auditor goes first**, before any plumbing. It's the only piece that produces a number,
-and it can be built against hand-written facts packets — no roster fetch, no search, no
-email, no cron. If it turns out not to help, that's worth knowing in week one rather than
-week four.
+### What the deterministic baseline measured
 
-Rough effort for the rest: the auditor is 2–3 days, mostly prompt iteration and labelling
-rather than code. The news loop is 4–6 days and is the one most likely to overrun, because
+`uv run python -m ffeval.audit.evaluate --baseline` — see
+[FINDINGS.md](FINDINGS.md) section 8 for the numbers and what they mean.
+
+The headline: a regex that only reads numbers catches **33% of unfaithful claims**, and every
+one of its ten misses is an *abstention* rather than a wrong answer. Its weakness is coverage,
+not accuracy — it declines to rule on 19 of 30 sentences because they contain no digits. And
+8 of the 10 misses need the verdict `not_in_packet`, which the baseline structurally cannot
+produce.
+
+That gives the LLM auditor a floor to beat and a named job: **rule on sentences with no
+numbers, and be able to say "absent" rather than "wrong."**
+
+### Honest limit on the current eval set
+
+The 30 labels were written by Claude, not by a human. So a score for the *LLM* auditor against
+them would be partly circular — one model checked against another model's reading of the same
+packet. The baseline number above is unaffected, because a regex is not a model.
+
+Recovery is cheap and recorded in the case file's `_provenance` block: clear a claim's `source`
+and rerun [eval/label.py](../eval/label.py). Any human-labelled subset immediately yields a
+real agreement rate against the preserved Claude pass in `eval/reference_labels/`.
+
+### Rough effort for the rest
+
+The LLM auditor is 1–2 days, mostly prompt iteration rather than code, now that the harness
+and the floor exist. The news loop is 4–6 days and is the one most likely to overrun, because
 every external source is its own failure mode. ESPN roster fetch is the biggest unknown —
 somewhere between a day and three, depending on how private-league auth behaves.
+
+Tests come before the prompt work, and not for tidiness: prompt output is stochastic, so the
+deterministic half has to be pinned first. Otherwise a recall number that moves from 33% to 41%
+to 36% has two possible causes and no way to separate them.
 
 **Standing risk:** scope creep back toward proving it out-picks a simple rule. It doesn't.
 That's settled, it's at the top of the README, and it isn't worth re-litigating with more
