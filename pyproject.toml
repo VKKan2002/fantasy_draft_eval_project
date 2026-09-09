@@ -11,9 +11,16 @@ dependencies = [
     "matplotlib>=3.8",
     "pyarrow>=16.0",
     "mcp>=2.1.1",
+    # Gemini API client, for the claim auditor. DESIGN.md picks Gemma via the
+    # Gemini API; the auditor must be a DIFFERENT model from the writer.
+    "google-genai>=1.0",
+    # Reads the gitignored .env so the key never has to be exported by hand.
+    "python-dotenv>=1.0",
 ]
 
-[project.optional-dependencies]
+# uv installs this group on a plain `uv sync`, unlike optional-dependencies,
+# so `uv run pytest` keeps working after any dependency change.
+[dependency-groups]
 dev = ["pytest>=8.0"]
 
 [build-system]

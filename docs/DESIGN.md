@@ -460,7 +460,7 @@ Actions secrets, never in the repo.
 | Evaluation harness ([evaluate.py](../src/ffeval/audit/evaluate.py)) | **done — 33% recall measured** |
 | Labelled eval set (1 packet, 30 claims) | done — labels are AI-written, see below |
 | LLM auditor (prompt, model call, parsing) | not started — **next** |
-| Test suite | **none** — `pytest` declared, no tests written |
+| Test suite | **14 tests** — deterministic layer only ([tests/test_auditor.py](../tests/test_auditor.py)) |
 | Numeric-source gate (layer 2) | not started, decided |
 | Templated numeric prose | not started |
 | News search and the digging loop | not started |

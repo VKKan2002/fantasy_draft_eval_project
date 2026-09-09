@@ -9,6 +9,7 @@ __pycache__/
 # scripts in checks/ -- the numbers they produce are recorded in docs/FINDINGS.md.
 # Figures that back a claim in the docs live in docs/ and ARE tracked.
 checks/out/
+eval/out/
 .aidlc-rule-details
 
 # Mermaid validator deps (see tools/README.md -- installed outside the repo)
@@ -22,3 +23,11 @@ package-lock.json
 # local scratch backups
 *.original
 *.backup
+
+# Secrets. API keys live here and in GitHub Actions secrets, never in the repo.
+.env
+.env.*
+!.env.example
+
+# Recorded model responses, replayed so prompt iteration is free and reproducible.
+.cache/model/
