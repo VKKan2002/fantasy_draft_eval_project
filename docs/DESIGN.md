@@ -459,8 +459,8 @@ Actions secrets, never in the repo.
 | Claim splitter + deterministic baseline checker ([auditor.py](../src/ffeval/audit/auditor.py)) | **done** |
 | Evaluation harness ([evaluate.py](../src/ffeval/audit/evaluate.py)) | **done — 33% recall measured** |
 | Labelled eval set (1 packet, 30 claims) | done — labels are AI-written, see below |
-| LLM auditor (prompt, model call, parsing) | not started — **next** |
-| Test suite | **14 tests** — deterministic layer only ([tests/test_auditor.py](../tests/test_auditor.py)) |
+| LLM auditor (prompt, model call, parsing) | **done — 93% recall vs 33% baseline** |
+| Test suite | **19 tests** — deterministic layer + prompt/parse plumbing ([tests/test_auditor.py](../tests/test_auditor.py)) |
 | Numeric-source gate (layer 2) | not started, decided |
 | Templated numeric prose | not started |
 | News search and the digging loop | not started |
@@ -478,8 +478,20 @@ not accuracy — it declines to rule on 19 of 30 sentences because they contain 
 8 of the 10 misses need the verdict `not_in_packet`, which the baseline structurally cannot
 produce.
 
-That gives the LLM auditor a floor to beat and a named job: **rule on sentences with no
+That gave the LLM auditor a floor to beat and a named job: **rule on sentences with no
 numbers, and be able to say "absent" rather than "wrong."**
+
+### What the LLM auditor measured
+
+Gemini 3.6 Flash, temperature 0, one call per packet: **93% recall on unfaithful claims against
+the baseline's 33%**, zero false alarms, and `not_in_packet` produced correctly 7 times out of
+the 8 that needed it. Full numbers, the reasoning it gave, and the caveats are in
+[FINDINGS.md](FINDINGS.md) section 9.
+
+The result worth keeping is not the 93%. It is that the first run cited two evidence ids that
+did not exist, because `render()` showed facts with ids and news without — a bug in the harness,
+found by the measurement rather than by review. `evaluate.py` now reports fabricated citations
+every run.
 
 ### Honest limit on the current eval set
 

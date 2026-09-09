@@ -19,10 +19,13 @@ value if the packet value ROUNDS to it at the precision the sentence used. "25" 
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
+from pathlib import Path
 
 from .packet import FactsPacket
-from .verdicts import ClaimVerdict, Verdict
+from .verdicts import AuditResult, ClaimVerdict, Verdict
 
 # Bumped whenever the LLM prompt text changes. Stored on every AuditResult so an old
 # result file is never silently compared against a newer prompt.
@@ -147,21 +150,136 @@ def baseline_verdict(packet: FactsPacket, claim: str) -> ClaimVerdict:
     )
 
 
-# ------------------------------------------------------------------ LLM auditor: later
-# Outside the current scope. The freeze target is a measured deterministic baseline; the
-# model-based auditor comes after there is something for it to beat.
+# ------------------------------------------------------------------ the LLM auditor
+
+CACHE_DIR = Path(".cache/model")
+
+# The rules the model is held to. Kept as one string so the prompt and
+# eval/LABELLING_RULES.md can be diffed by eye. Forks 1a, 2a, 3b, 4a.
+_RULES = """You are auditing sentences against an evidence packet.
+
+Your ONLY question per sentence: does it follow from the packet below?
+NOT whether it is true in the real world. A sentence can be perfectly true and still
+fail, because the packet does not contain it.
+
+Answer with exactly one of:
+  supported      - the packet contains this, and you can name the fact or news id
+  contradicted   - the packet says something incompatible with this
+  not_in_packet  - the packet neither confirms nor denies it, including true things it omits
+  not_a_claim    - there is no factual assertion to check (a recommendation, a hedge)
+
+Rules:
+1. NUMBERS: a stated number is supported if a packet value rounds to it at the precision
+   the sentence used. "25" matches 25.29. "25.3" matches 25.29. "26" does not.
+2. DATES: the packet header names one season and week. A bare present-tense claim is about
+   THAT week. If a news item from an earlier season says otherwise, the current structured
+   fact wins and the sentence is contradicted.
+3. ATTRIBUTION: a news item supports that SOMEONE SAID something, not the thing itself.
+   "The coach said he expects a normal week" is supported. "He is expected to have a normal
+   week", stated bare, is not_in_packet.
+4. TWO CLAIMS IN ONE SENTENCE: give the worse verdict.
+   contradicted > not_in_packet > supported > not_a_claim.
+5. Every "supported" needs at least one id in evidence_ids. If you cannot name the
+   evidence, it is not supported.
+"""
+
+_OUTPUT_FORMAT = """Reply with ONLY a JSON array, no prose and no code fence. One object per
+sentence, in order:
+
+[{"n": 1, "verdict": "supported", "evidence_ids": ["form.avg_ppr_l2"], "reason": "..."}]
+
+Include every sentence exactly once. reason is one short sentence."""
+
 
 def build_prompt(packet: FactsPacket, claims: list[str]) -> str:
-    raise NotImplementedError("LLM auditor not built yet - see later.md")
+    """Assemble the auditor prompt: rules, packet, numbered sentences, output format."""
+    numbered = "\n".join(f"{i}. {c}" for i, c in enumerate(claims, start=1))
+    return (
+        f"{_RULES}\n"
+        f"--- EVIDENCE PACKET ---\n{packet.render()}\n"
+        f"--- SENTENCES TO JUDGE ({len(claims)}) ---\n{numbered}\n\n"
+        f"{_OUTPUT_FORMAT}\n"
+    )
+
+
+def call_model(prompt: str, model: str, cache_dir: Path | str = CACHE_DIR) -> str:
+    """One model call, cached on disk by (model, prompt).
+
+    The cache is not an optimisation. Prompt iteration re-runs the same claims dozens of
+    times; without it every tweak costs quota and no run is reproducible.
+    """
+    cache = Path(cache_dir)
+    key = hashlib.sha256(f"{model}\n{prompt}".encode()).hexdigest()[:16]
+    hit = cache / f"{key}.txt"
+    if hit.exists():
+        return hit.read_text()
+
+    from dotenv import load_dotenv          # imported here so tests never need a key
+    from google import genai
+    from google.genai import types
+
+    load_dotenv()
+    client = genai.Client()                 # reads GEMINI_API_KEY
+    resp = client.models.generate_content(
+        model=model,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            temperature=0,
+            # We pass no tools, so the SDK's function-calling setup is dead weight
+            # and warns on every call. Off.
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        ),
+    )
+    text = resp.text or ""
+    cache.mkdir(parents=True, exist_ok=True)
+    hit.write_text(text)
+    return text
 
 
 def parse_response(raw: str, claims: list[str]) -> tuple[ClaimVerdict, ...]:
-    raise NotImplementedError("LLM auditor not built yet - see later.md")
+    """Model text -> verdicts. Raises rather than guessing.
+
+    A missing or unparseable ruling is a real failure. Backfilling the majority class
+    here is how a broken auditor comes out looking accurate.
+    """
+    body = raw.strip()
+    if body.startswith("```"):                       # tolerate a fence
+        body = body.split("```")[1]
+        body = body[4:] if body.lower().startswith("json") else body
+    try:
+        rows = json.loads(body.strip())
+    except json.JSONDecodeError as e:
+        raise ValueError(f"model did not return JSON: {e}\n{raw[:300]}") from e
+
+    by_n = {int(r["n"]): r for r in rows}
+    missing = [i for i in range(1, len(claims) + 1) if i not in by_n]
+    if missing:
+        raise ValueError(f"model skipped sentences {missing} of {len(claims)}")
+
+    out = []
+    for i, claim in enumerate(claims, start=1):
+        r = by_n[i]
+        out.append(
+            ClaimVerdict(
+                claim=claim,                          # ours, not the model's echo
+                verdict=Verdict(str(r["verdict"]).strip().lower()),   # raises if unknown
+                evidence_ids=tuple(r.get("evidence_ids") or ()),
+                reason=str(r.get("reason", "")),
+            )
+        )
+    return tuple(out)
 
 
-def call_model(prompt: str, model: str, cache_dir: str | None = None) -> str:
-    raise NotImplementedError("LLM auditor not built yet - see later.md")
+def audit_claims(packet: FactsPacket, claims: list[str], model: str) -> AuditResult:
+    """Judge an already-split list of sentences. One model call for all of them."""
+    raw = call_model(build_prompt(packet, claims), model)
+    return AuditResult(
+        verdicts=parse_response(raw, claims),
+        model=model,
+        prompt_version=PROMPT_VERSION,
+    )
 
 
-def audit(packet: FactsPacket, text: str, model: str):
-    raise NotImplementedError("LLM auditor not built yet - see later.md")
+def audit(packet: FactsPacket, text: str, model: str) -> AuditResult:
+    """Judge writer prose: split it, then audit the sentences."""
+    return audit_claims(packet, split_claims(text), model)

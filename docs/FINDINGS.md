@@ -1,6 +1,6 @@
 # Findings
 
-Sections 1-7 measured on 2026-08-30, section 8 on 2026-09-03, all against live data. Each number names the script that
+Sections 1-7 measured on 2026-08-30, sections 8-9 on 2026-09-03 and 2026-09-09, all against live data. Each number names the script that
 produces it, so all of it is reproducible rather than remembered.
 
 Seasons 2014–2025, 12-team PPR, point-in-time ADP only.
@@ -235,3 +235,79 @@ almost nothing over free regex, and one run will say so.
 **Limit worth stating:** the 30 labels were written by Claude. The number above is unaffected —
 a regex is not a model — but an LLM auditor scored against these labels would be partly
 circular. See the `_provenance` block in `eval/cases/2025_w03_allen.json`.
+
+## 9. The LLM claim auditor — does a model beat the regex?
+
+`src/ffeval/audit/evaluate.py --model gemini-3.6-flash` · same packet, same 30 labelled
+claims, temperature 0
+
+| | Gemini 3.6 Flash | regex baseline | always say "supported" |
+|---|---|---|---|
+| Recall on unfaithful claims | **14 of 15 (93%)** | 5 of 15 (33%) | 0 |
+| False alarms on supported claims | **0 of 10** | 1 of 10 | 0 |
+| Exact agreement | **97%** | 43% | 33% |
+| Fabricated evidence citations | **0 of 17** | n/a | n/a |
+
+**Confusion matrix.** Every cell off the diagonal is empty except one:
+
+| | supported | contradicted | not_in_packet | not_a_claim |
+|---|---|---|---|---|
+| supported | 10 | 0 | 0 | 0 |
+| contradicted | 0 | 7 | 0 | 0 |
+| not_in_packet | 0 | 0 | 7 | 1 |
+| not_a_claim | 0 | 0 | 0 | 5 |
+
+**The specific gap it was built to close, closed.** Section 8 found that the regex could not
+express `not_in_packet` at all, and that 8 of its 10 misses needed exactly that verdict. The
+model produced it correctly 7 times out of 8.
+
+**It applied the labelling rules rather than pattern-matching.** The reasoning strings show the
+forks being used, not guessed:
+
+- Fork 3(b), attribution — on *"He was pressured on 34 percent of his dropbacks"*:
+  *"The news source attributes this statistic to a beat writer, so the bare factual claim
+  itself is not supported."*
+- Fork 2(a), stale news vs current fact — on *"He was limited in practice on Wednesday"*:
+  *"Current week 3 practice status is none; the news report of limited practice is from an
+  earlier 2023 season."* Cited `injury.practice_status`.
+- Direction — on *"Miami has been one of the stingiest defenses"*:
+  *"Miami ranks 2nd in PPR points allowed to QBs, meaning they allow the second-most points,
+  not one of the stingiest."*
+
+**The single miss is a rules gap, not a model error.** `allen-25`, *"Milano's absence should mean
+more offensive possessions for Buffalo"* — labelled `not_in_packet`, the model said
+`not_a_claim` ("a speculative opinion or opinion-based projection"). That claim was flagged
+*ambiguous in advance* in `eval/reference_labels/README.md`, precisely because "should" makes it
+readable either way. The rules do not cover inference-with-a-hedge. Reporting 14/15 rather than
+excluding it, because dropping the one hard case is how a score gets flattered.
+
+### The harness bug the eval caught
+
+The first run showed **2 fabricated evidence citations**: `bills-coach-presser` and
+`bills-injury-report`, neither of which exists. The model had reverse-engineered them from URL
+slugs — because `packet.render()` printed facts as `[fact.id] label = value` but printed news
+items **without their id at all**. It could not cite what it was never shown.
+
+Fixed by rendering news ids the same way facts are; fabrications went to 0 with every verdict
+unchanged. Pinned by `test_render_includes_news_ids`, and `evaluate.py` now reports fabricated
+citations as a standing metric.
+
+Worth recording as the more useful of the two results: the measurement found a defect in the
+*harness*, not in the model. A citation field is worthless if nothing checks that the citation
+resolves.
+
+### What this number is and is not worth
+
+**n = 30, so the interval is wide.** Recall of 14/15 carries a Wilson 95% CI of roughly
+**[70%, 99%]**. The gap over the 33% baseline is far too large to be noise; the exact value is
+not pinned. Scaling to a few hundred claims across several packets is what would narrow it.
+
+**Cross-model, but not human-validated.** The labels were written by Claude and the auditor is
+Gemini, so this is not one model grading itself — a genuine independent reading, which is much
+stronger evidence than same-model agreement. It is still not ground truth. The honest sentence
+is *"Gemini agreed with an independent Claude pass on 97% of 30 claims,"* never *"the auditor is
+97% accurate."*
+
+**The eval set is deliberately enriched.** 15 of 25 real claims are unfaithful, far above what a
+real week would produce. That is required to measure recall at all, and it means nothing here
+predicts a production unfaithful rate.

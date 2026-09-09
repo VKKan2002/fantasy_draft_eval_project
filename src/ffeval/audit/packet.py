@@ -74,7 +74,7 @@ class FactsPacket:
             for fact in self.facts
         )
         news_str = "\n".join(
-            f"{news.text} (url: {news.url}, published: {news.published})"
+            f"[{news.id}] {news.text} (url: {news.url}, published: {news.published})"
             for news in self.news
         )
         return (

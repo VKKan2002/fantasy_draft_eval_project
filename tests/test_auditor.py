@@ -2,7 +2,15 @@
 
 from pathlib import Path
 
-from ffeval.audit.auditor import _rounds_to, baseline_verdict, split_claims
+import pytest
+
+from ffeval.audit.auditor import (
+    _rounds_to,
+    baseline_verdict,
+    build_prompt,
+    parse_response,
+    split_claims,
+)
 from ffeval.audit.evaluate import (
     always_supported_baseline,
     load_cases,
@@ -114,3 +122,53 @@ def test_baseline_still_catches_5_of_15():
     # Raw counts, not the ratio: 5/15 and 10/30 are both 33%.
     assert (bad, caught) == (15, 5)
     assert s.recall_unfaithful == 5 / 15
+
+
+# ------------------------------------------- the LLM auditor's plumbing (no key needed)
+
+CLAIMS = ["Buffalo is favoured by 12.5 points.", "I'd start him."]
+
+
+def test_prompt_contains_packet_ids_and_numbered_claims():
+    """The model can only cite ids it can see, and must know which sentence is which."""
+    prompt = build_prompt(PACKET, CLAIMS)
+    assert "[matchup.spread_line]" in prompt
+    assert "1. Buffalo is favoured by 12.5 points." in prompt
+    assert "UNTRUSTED NEWS" in prompt
+
+
+def test_parse_tolerates_a_code_fence_and_row_order():
+    raw = """```json
+    [{"n": 2, "verdict": "not_a_claim", "evidence_ids": [], "reason": "a recommendation"},
+     {"n": 1, "verdict": "supported", "evidence_ids": ["matchup.spread_line"], "reason": "ok"}]
+    ```"""
+    v = parse_response(raw, CLAIMS)
+    assert [x.verdict for x in v] == [Verdict.SUPPORTED, Verdict.NOT_A_CLAIM]
+    assert v[0].claim == CLAIMS[0], "must keep our claim text, not the model's echo"
+
+
+def test_parse_raises_on_a_skipped_sentence():
+    """A missing ruling is a real failure. Never backfill the majority class."""
+    with pytest.raises(ValueError, match="skipped"):
+        parse_response('[{"n":1,"verdict":"supported","evidence_ids":["x"],"reason":"r"}]', CLAIMS)
+
+
+def test_parse_raises_on_an_unknown_verdict():
+    """'unsupported' is a real thing models emit; it must not silently map to supported."""
+    with pytest.raises(ValueError):
+        parse_response(
+            '[{"n":1,"verdict":"unsupported","evidence_ids":[],"reason":"r"},'
+            ' {"n":2,"verdict":"not_a_claim","evidence_ids":[],"reason":"r"}]',
+            CLAIMS,
+        )
+
+
+def test_render_includes_news_ids():
+    """A news id the model never sees is a news id it will invent.
+
+    Found the hard way: the first LLM run cited 'bills-coach-presser', reverse-engineered
+    from a URL slug, because render() printed facts with ids and news without.
+    """
+    rendered = PACKET.render()
+    for n in PACKET.news:
+        assert f"[{n.id}]" in rendered
